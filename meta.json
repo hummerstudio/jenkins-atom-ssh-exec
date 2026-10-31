@@ -1,0 +1,12 @@
+{
+  "name": "Run over SSH",
+  "summary": "Runs a shell command on another machine over SSH and streams its output.",
+  "author": "hummerstudio",
+  "license": "MIT",
+  "tags": [
+    "official-port",
+    "ssh",
+    "deploy"
+  ],
+  "homepage": "https://github.com/hummerstudio/jenkins-atom-ssh-exec"
+}

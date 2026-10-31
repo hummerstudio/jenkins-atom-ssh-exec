@@ -1,0 +1,88 @@
+{
+  "atomCode": "ssh-exec",
+  "name": "Run over SSH",
+  "version": "1.0.0",
+  "description": "Runs a shell command on another machine over SSH and streams its output.",
+  "execution": {
+    "packagePath": "ssh-exec.jar",
+    "language": "java",
+    "target": "$atom_java_path -cp ssh-exec.jar com.jenkinschina.atom.sdk.AtomRunner"
+  },
+  "input": {
+    "host": {
+      "label": "主机",
+      "type": "vuex-input",
+      "default": ""
+    },
+    "port": {
+      "label": "端口",
+      "type": "vuex-input",
+      "default": "22"
+    },
+    "user": {
+      "label": "用户名",
+      "type": "vuex-input",
+      "default": ""
+    },
+    "command": {
+      "label": "要执行的命令",
+      "type": "textarea",
+      "default": ""
+    },
+    "keyFile": {
+      "label": "私钥路径（workspace 内）",
+      "type": "vuex-input",
+      "default": ""
+    },
+    "key": {
+      "label": "或直接给私钥内容",
+      "type": "password",
+      "default": ""
+    },
+    "knownHostsFile": {
+      "label": "known_hosts 文件（留空用系统默认）",
+      "type": "vuex-input",
+      "default": ""
+    },
+    "strictHostKeyChecking": {
+      "label": "主机密钥校验（accept-new / yes / no）",
+      "type": "vuex-input",
+      "default": "accept-new"
+    },
+    "expectedExitCode": {
+      "label": "期望退出码",
+      "type": "vuex-input",
+      "default": "0"
+    },
+    "failOnError": {
+      "label": "退出码不符就让这一步失败",
+      "type": "checkbox",
+      "default": "true"
+    },
+    "timeoutSeconds": {
+      "label": "超时（秒）",
+      "type": "vuex-input",
+      "default": "120"
+    }
+  },
+  "output": {
+    "exitCode": {
+      "type": "string",
+      "description": "远端命令的退出码"
+    },
+    "durationMs": {
+      "type": "string",
+      "description": "耗时（毫秒）"
+    },
+    "stdoutBytes": {
+      "type": "string",
+      "description": "标准输出字节数"
+    }
+  },
+  "x-jenkins": {
+    "protocol": "jenkins-1",
+    "requires": {
+      "runner": ">=0.4.0"
+    }
+  }
+}
