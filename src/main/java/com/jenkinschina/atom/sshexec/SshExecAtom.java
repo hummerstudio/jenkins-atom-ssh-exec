@@ -8,9 +8,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -64,7 +67,7 @@ public class SshExecAtom implements AtomTask {
                 }
                 keyOption = keyPath.toString();
             } else if (key != null && !key.isBlank()) {
-                keyPath = Files.createTempFile("atom-ssh-", ".key");
+                keyPath = createOwnerOnlyTempFile("atom-ssh-", ".key");
                 Files.writeString(keyPath, key.endsWith("\n") ? key : key + "\n", StandardCharsets.UTF_8);
                 setOwnerOnly(keyPath);
                 keyOption = keyPath.toString();
@@ -119,9 +122,8 @@ public class SshExecAtom implements AtomTask {
             }
             if (result.exit != expected) {
                 String detail = result.stderr.isBlank() ? result.stdout : result.stderr;
-                ErrorType type = timedOut ? ErrorType.ENVIRONMENT
-                        : result.exit == 255 ? ErrorType.USER   // ssh itself failed: key, host, port
-                                : ErrorType.USER;
+                // ssh's own failures (255: key, host, port) and the remote command's are both the caller's to fix
+                ErrorType type = timedOut ? ErrorType.ENVIRONMENT : ErrorType.USER;
                 AtomResult failure = AtomResult.error(type, 40006, (timedOut ? "" : "the command exited " + result.exit
                         + " (expected " + expected + "): ") + oneLine(tail(detail)));
                 return failure
@@ -155,6 +157,19 @@ public class SshExecAtom implements AtomTask {
     private static String oneLine(String value) {
         String flat = value.replaceAll("\\s+", " ").trim();
         return flat.length() > 400 ? flat.substring(0, 400) + "…" : flat;
+    }
+
+    /**
+     * The key lands in a file nobody else can read: 0600 from creation, so there is no window where the private key
+     * is readable by another account. A filesystem without POSIX modes has no group/world bit to drop, so the
+     * attribute is left off there.
+     */
+    private static Path createOwnerOnlyTempFile(String prefix, String suffix) throws IOException {
+        if (FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
+            return Files.createTempFile(prefix, suffix,
+                    PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------")));
+        }
+        return Files.createTempFile(prefix, suffix, new FileAttribute<?>[0]);
     }
 
     private static void setOwnerOnly(Path file) {
