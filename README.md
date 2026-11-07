@@ -10,5 +10,5 @@ ssh-steps 用 Groovy DSL 包 JSch；能搬的部分是「把这些命令行在�
 - 私钥可给路径或内容（内容写 0600 临时文件，用完删除）
 
 ```bash
-./build.sh && ./tools/smoke.sh
+mvn verify    # packages dist/ssh-exec/ and runs src/test/java/atom/SshExecIT.java against a throwaway sshd
 ```
